@@ -48,7 +48,6 @@
 - "This month" button to jump back to the current month
 
 **Other**
-- Custom app icon in the colours of the Rs 5000 note
 - Fully offline, with data saved on the device using SwiftData
 
 ## Tech stack
