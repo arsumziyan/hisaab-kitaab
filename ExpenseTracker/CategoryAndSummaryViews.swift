@@ -204,6 +204,8 @@ struct SummaryView: View {
     @Query(sort: \Category.name) private var categories: [Category]
 
     @State private var selectedMonth = Date.now.startOfMonth
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @State private var showingBudget = false
 
     private struct Slice: Identifiable {
         let id = UUID()
@@ -250,6 +252,55 @@ struct SummaryView: View {
             result.append(Slice(name: "Uncategorized", total: uncategorized, color: .gray))
         }
         return result.sorted { $0.total > $1.total }
+    }
+
+    private var budgetColor: Color {
+        guard monthlyBudget > 0 else { return .accentColor }
+        let ratio = monthTotal / monthlyBudget
+        if ratio > 1 { return .red }
+        return ratio >= 0.8 ? .orange : .green
+    }
+
+    private var budgetCard: some View {
+        Button { showingBudget = true } label: {
+            if monthlyBudget > 0 {
+                let remaining = monthlyBudget - monthTotal
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Label("Monthly budget", systemImage: "target")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "pencil")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    ProgressView(value: min(monthTotal / monthlyBudget, 1))
+                        .tint(budgetColor)
+                    HStack {
+                        Text("\(monthTotal.money) of \(monthlyBudget.money)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(remaining >= 0 ? "\(remaining.money) left" : "\((-remaining).money) over")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(remaining >= 0 ? Color.primary : Color.red)
+                    }
+                }
+            } else {
+                HStack {
+                    Image(systemName: "target")
+                    Text("Set a monthly budget")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func changeMonth(by value: Int) {
@@ -299,6 +350,8 @@ struct SummaryView: View {
                     .padding(.horizontal, 8)
                     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
+                    budgetCard
+
                     if slices.isEmpty {
                         ContentUnavailableView(
                             "No expenses this month",
@@ -338,6 +391,7 @@ struct SummaryView: View {
                 .padding()
             }
             .navigationTitle("Summary")
+            .sheet(isPresented: $showingBudget) { BudgetEditView() }
             .toolbar {
                 if !isCurrentMonth {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -348,5 +402,61 @@ struct SummaryView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Monthly budget editor
+
+struct BudgetEditView: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @State private var text = ""
+
+    private var value: Double? {
+        Double(text.replacingOccurrences(of: ",", with: "."))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("e.g. 50000", text: $text)
+                        .keyboardType(.decimalPad)
+                } header: {
+                    Text("Monthly budget (\(currencySymbol))")
+                } footer: {
+                    Text("One budget for all categories combined. It applies to every month.")
+                }
+
+                if monthlyBudget > 0 {
+                    Section {
+                        Button("Remove budget", role: .destructive) {
+                            monthlyBudget = 0
+                            dismiss()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Monthly Budget")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        monthlyBudget = max(value ?? 0, 0)
+                        dismiss()
+                    }
+                    .disabled(value == nil)
+                }
+            }
+            .onAppear {
+                if monthlyBudget > 0 {
+                    text = monthlyBudget.formatted(.number.precision(.fractionLength(0...2)).grouping(.never))
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
