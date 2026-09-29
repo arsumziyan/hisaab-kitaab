@@ -22,7 +22,10 @@
 
 | Expenses | Categories | Summary |
 |:---:|:---:|:---:|
-| <img src="screenshots/expenses.png" width="230" alt="Expenses screen" /> | <img src="screenshots/categories.png" width="230" alt="Categories screen" /> | <img src="screenshots/summary.png" width="230" alt="Summary screen" /> |
+| <img src="<img width="721" height="1568" alt="image" src="https://github.com/user-attachments/assets/42aa20b4-1c8e-4a5c-a3be-c80c775be9ea" />
+" width="230" alt="Expenses screen" /> | <img src="<img width="721" height="1568" alt="image" src="https://github.com/user-attachments/assets/e185b877-2c3f-44a4-84d3-393ebd98de9e" />
+" width="230" alt="Categories screen" /> | <img src="<img width="721" height="1568" alt="image" src="https://github.com/user-attachments/assets/2beed3bc-74a6-40d7-8935-23c153868b17" />
+" width="230" alt="Summary screen" /> |
 
 ## Features
 
