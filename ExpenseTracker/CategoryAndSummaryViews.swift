@@ -460,3 +460,13 @@ struct BudgetEditView: View {
         .presentationDetents([.medium])
     }
 }
+
+#Preview("Categories") {
+    CategoryListView()
+        .modelContainer(for: [Category.self, Expense.self], inMemory: true)
+}
+
+#Preview("Summary") {
+    SummaryView()
+        .modelContainer(for: [Category.self, Expense.self], inMemory: true)
+}

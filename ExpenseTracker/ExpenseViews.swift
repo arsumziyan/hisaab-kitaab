@@ -200,3 +200,8 @@ struct ExpenseFormView: View {
         dismiss()
     }
 }
+
+#Preview {
+    ExpenseListView()
+        .modelContainer(for: [Category.self, Expense.self], inMemory: true)
+}
